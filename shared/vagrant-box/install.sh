@@ -2,7 +2,6 @@
 
 set -eu
 
-function thisWorked() {
 printf '# ################## #\n'
 printf '# Install crossdev on the PC\n'
 printf '# https://wiki.gentoo.org/wiki/Raspberry_Pi_3_64_bit_Install#Install_crossdev_on_the_PC\n'
@@ -13,6 +12,7 @@ printf '## ################## #\n'
 printf '## Setup crossdev repo\n'
 printf '## https://wiki.gentoo.org/wiki/Custom_repository#Crossdev\n'
 printf '## ################## #\n'
+mkdir -p /var/db/repos/localrepo-crossdev/{profiles,metadata}
 printf 'crossdev' > /var/db/repos/localrepo-crossdev/profiles/repo_name
 printf 'masters = gentoo' > /var/db/repos/localrepo-crossdev/metadata/layout.conf
 chown -R portage:portage /var/db/repos/localrepo-crossdev
@@ -40,8 +40,16 @@ mkdir ~/raspberrypi
 cd ~/raspberrypi
 git clone -b stable --depth=1 https://github.com/raspberrypi/firmware
 
-# TODO: Place this section here again
-# printf '# Fetch, configure and build the Raspberry Pi kernel\n'
+printf '# ################## #\n'
+printf '# Fetch, configure and build the Raspberry Pi kernel\n'
+printf '# https://wiki.gentoo.org/wiki/Raspberry_Pi_3_64_bit_Install#Fetch.2C_configure_and_build_the_Raspberry_Pi_kernel\n'
+printf '# ################## #\n'
+git clone https://github.com/raspberrypi/linux
+cd ~/raspberrypi/linux
+# ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make bcm2711_defconfig
+# ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make menuconfig
+cp /home/vagrant/shared/rpi/config-5.4.y .config
+ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make -j"$(($(nproc)+1))"
 
 
 printf '# ################## #\n'
@@ -85,17 +93,6 @@ printf '# ################## #\n'
 cp -rv ~/raspberrypi/firmware/boot/* /mnt/gentoo/boot/
 cp ~/raspberrypi/linux/arch/arm64/boot/Image /mnt/gentoo/boot/kernel8.img
 
-printf '# ################## #\n'
-printf '# Fetch, configure and build the Raspberry Pi kernel\n'
-printf '# https://wiki.gentoo.org/wiki/Raspberry_Pi_3_64_bit_Install#Fetch.2C_configure_and_build_the_Raspberry_Pi_kernel\n'
-printf '# ################## #\n'
-git clone https://github.com/raspberrypi/linux
-cd ~/raspberrypi/linux
-# ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make bcm2711_defconfig
-# ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make menuconfig
-cp /home/vagrant/script/config-5.4.y .config
-ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make -j"$(($(nproc)+1))"
-
 printf '## ################## #\n'
 printf '## Install the device tree\n'
 printf '## https://wiki.gentoo.org/wiki/Raspberry_Pi_3_64_bit_Install#Install_the_device_tree\n'
@@ -121,7 +118,7 @@ printf '## Serial port configuration\n'
 printf '## https://wiki.gentoo.org/wiki/Raspberry_Pi_3_64_bit_Install#Serial_port_configuration\n'
 printf '## ################## #\n'
 sed -iE 's@^f0:12345:respawn:/sbin/agetty 9600 ttyAMA0 vt100$@# \0@' /mnt/gentoo/etc/inittab
-cp /home/vagrant/script/99-com.rules /mnt/gentoo/etc/udev/rules.d/99-com.rules
+cp /home/vagrant/shared/rpi/99-com.rules /mnt/gentoo/etc/udev/rules.d/99-com.rules
 printf '## ################## #\n'
 printf '## Install WiFi firmware\n'
 printf '## https://wiki.gentoo.org/wiki/Raspberry_Pi_3_64_bit_Install#Install_WiFi_firmware\n'
@@ -136,14 +133,13 @@ printf '## Install Bluetooth firmware\n'
 printf '## https://wiki.gentoo.org/wiki/Raspberry_Pi_3_64_bit_Install#Install_Bluetooth_firmware\n'
 printf '## ################## #\n'
 wget -P /mnt/gentoo/lib/firmware/brcm https://raw.githubusercontent.com/RPi-Distro/bluez-firmware/master/broadcom/BCM4345C0.hcd
-}
 
 
 printf '# ################## #\n'
 printf '# Setup\n'
 printf '# https://wiki.gentoo.org/wiki/Raspberry_Pi_3_64_bit_Install#Setup\n'
 printf '# ################## #\n'
-cp /home/vagrant/script/config.txt /mnt/gentoo/boot/config.txt
+cp /home/vagrant/shared/rpi/config.txt /mnt/gentoo/boot/config.txt
 printf 'root=/dev/mmcblk0p3 rootfstype=ext4 rootwait' > /mnt/gentoo/boot/cmdline.txt
 sed -Ei 's@^CFLAGS=.*$@# \0\nCFLAGS="-march=armv8-a+crc+simd -mtune=cortex-a72 -ftree-vectorize -O2 -pipe -fomit-frame-pointer"@' /mnt/gentoo/etc/portage/make.conf
 
