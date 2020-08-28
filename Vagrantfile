@@ -31,7 +31,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision :reload
 
   config.vm.provision "shell",
-    inline: "sudo /home/vagrant/shared/vagrant-box/install.sh"
+    inline: "/home/vagrant/shared/vagrant-box/install.sh"
 
   # Enable provisioning with a shell script. Additional provisioners such as
   # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
