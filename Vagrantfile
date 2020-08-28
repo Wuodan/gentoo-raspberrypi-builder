@@ -1,9 +1,10 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# config.vagrant.plugins = ["vagrant-reload"]
-
 Vagrant.configure("2") do |config|
+
+  config.vagrant.plugins = ["vagrant-reload"]
+
   config.vm.box = "generic/gentoo"
   config.vm.box_version = "3.0.28"
   config.vm.synced_folder "shared/", "/home/vagrant/shared"
@@ -24,9 +25,10 @@ Vagrant.configure("2") do |config|
       "--productid", "0x4000"]
   end
 
-  # config.vm.provision "shell",
-    # inline: "sudo /home/vagrant/shared/vagrant-box/patchKernel.sh"
-  # config.vm.provision :reload
+  config.vm.provision "shell",
+    inline: "sudo /home/vagrant/shared/vagrant-box/patchKernel.sh"
+
+  config.vm.provision :reload
 
   config.vm.provision "shell",
     inline: "sudo /home/vagrant/shared/vagrant-box/install.sh"
