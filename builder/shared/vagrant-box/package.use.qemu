@@ -1,0 +1,6 @@
+app-emulation/qemu static-user qemu_user_targets_aarch64
+>=dev-libs/glib-2.62.6 static-libs
+>=sys-libs/zlib-1.2.11-r2 static-libs
+>=sys-apps/attr-2.4.48-r3 static-libs
+>=dev-libs/libpcre-8.43 static-libs
+>=dev-libs/libxml2-2.9.10-r1 python_targets_python3_7
