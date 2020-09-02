@@ -220,7 +220,7 @@ sudo cp $_arg_share/rpi/accept_keywords-raspberrypi \
 
 # Emerge rpi-sources
 sudo $_arg_share/vagrant-box/chroot-rpi.sh \
-    'ROOT=/ CBUILD=$(portageq envvar CHOST) HOSTCC=$CBUILD-gcc USE=symlink emerge raspberrypi-sources'
+    'emerge-chroot raspberrypi-sources'
 
 sudo $_arg_share/vagrant-box/chroot-rpi.sh \
     "printf 'sys-boot/raspberrypi-firmware raspberrypi-videocore-bin\n' >> /etc/portage/package.license"
@@ -322,5 +322,21 @@ sudo cp $_arg_share/rpi/cmdline.txt $_arg_rpi_folder/boot
 
 # parted to setup SD card
 emerge parted
+
+# more configuration in chroot
+
+printf '## ################## #\n'
+printf '## ssh on boot\n'
+printf '## ################## #\n'
+sudo $_arg_share/vagrant-box/chroot-rpi.sh \
+    'rc-update add sshd default'
+
+printf '## ################## #\n'
+printf '## emerge wpa_supplicant\n'
+printf '## ################## #\n'
+sudo $_arg_share/vagrant-box/chroot-rpi.sh \
+   'emerge-chroot -avt net-wireless/wpa_supplicant openssh'
+
+# add a wifi network to wpa_supplicant
 
 # ] <-- needed because of Argbash
