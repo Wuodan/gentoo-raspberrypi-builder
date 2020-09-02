@@ -6,7 +6,6 @@ SHARE=/home/vagrant/shared
 RPI_FILES=~/rpi-files
 RPI_TARGET=/home/vagrant/rpi-install
 
-function thisWorked(){
 sudo sed -Ei "s@^MAKEOPTS=\"-j8\"\$@# \0\nMAKEOPTS=\"-j$(($(nproc)+1))\"@" /etc/portage/make.conf
 
 printf '# ################## #\n'
@@ -113,7 +112,6 @@ sudo mv $RPI_TARGET/etc/portage/package.keywords \
 sudo cp $SHARE/rpi/accept_keywords-raspberrypi \
     $RPI_TARGET/etc/portage/package.accept_keywords/raspberrypi
 
-}
 # Emerge rpi-sources
 sudo $SHARE/vagrant-box/chroot-rpi.sh \
     'ROOT=/ CBUILD=$(portageq envvar CHOST) HOSTCC=$CBUILD-gcc USE=symlink emerge raspberrypi-sources'
@@ -215,3 +213,5 @@ printf '## /boot/cmdline.txt\n'
 printf '## https://wiki.gentoo.org/wiki/Raspberry_Pi_3_64_bit_Install#.2Fboot.2Fcmdline.txt\n'
 printf '## ################## #\n'
 sudo cp $SHARE/rpi/cmdline.txt $RPI_TARGET/boot
+
+emerge parted
