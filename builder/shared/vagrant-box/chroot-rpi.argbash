@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# m4_ignore(
+echo "This is just a script template, not the script (yet) - pass it to 'argbash' to fix this." >&2
+exit 11  #)Created by argbash-init v2.9.0
+
+# ARG_OPTIONAL_SINGLE([rpi-folder], [f], [root folder for chroot], [/home/vagrant/rpi-install])
+# ARG_DEFAULTS_POS
+# ARG_HELP([helper script to chroot into rpi folder])
+# ARGBASH_GO
+
+# [ <-- needed because of Argbash
+
+set -eu
+
+# [ -e /proc/sys/fs/binfmt_misc/register ] || \
+echo ':aarch64:M::\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x03\x00\xb7\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-aarch64:' \
+    2>/dev/null \
+    > /proc/sys/fs/binfmt_misc/register || true
+
+mount -o bind /dev "${_arg_rpi_folder}"/dev
+mount -o bind /proc "${_arg_rpi_folder}"/proc
+mount -o bind /sys "${_arg_rpi_folder}"/sys
+mount -o rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=000 devpts "${_arg_rpi_folder}"/dev/pts -t devpts
+
+cp /etc/resolv.conf "${_arg_rpi_folder}"/etc/
+
+RETURN=0
+if [ $# -gt 0 ]; then
+    chroot "${_arg_rpi_folder}" /bin/bash -c "${@}" || RETURN=$?
+else
+    chroot "${_arg_rpi_folder}" /bin/bash --login
+fi
+
+umount "${_arg_rpi_folder}"/{proc,sys,dev/pts,dev}
+
+exit $RETURN
+
+# ] <-- needed because of Argbash

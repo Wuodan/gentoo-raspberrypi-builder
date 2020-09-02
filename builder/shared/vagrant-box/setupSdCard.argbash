@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# m4_ignore(
+echo "This is just a script template, not the script (yet) - pass it to 'argbash' to fix this." >&2
+exit 11  #)Created by argbash-init v2.9.0
+# ARG_OPTIONAL_SINGLE([rpi-folder], [f], [root folder for chroot], [/home/vagrant/rpi-install])
+# ARG_OPTIONAL_SINGLE([disk], [d], [disk of the SD card], [/dev/sdb])
+# ARG_OPTIONAL_SINGLE([mountpoint], [m], [mountpoint for the rpi root partition on the SD card], [/mnt/gentoo])
+# ARG_DEFAULTS_POS
+# ARG_HELP([<The general help message of my script>])
+# ARGBASH_GO
+
+# [ <-- needed because of Argbash
+
+
+set -eu
+
+parted -s "${_arg_disk}" mklabel msdos
+
+parted -s "${_arg_disk}" unit mib mkpart primary fat32 1 129
+parted -s "${_arg_disk}" unit mib mkpart primary linux-swap 129 $((16384 + 129))
+parted -s "${_arg_disk}" unit mib mkpart primary ext4 $((16384 + 129)) 100%
+
+parted "${_arg_disk}" set 1 boot on
+
+emerge sys-fs/dosfstools
+
+mkfs -t vfat -F 32 "${_arg_disk}"1
+mkswap "${_arg_disk}"2
+mkfs -F -i 8192 -t ext4 "${_arg_disk}"3
+sync
+
+mount "${_arg_disk}"3 $_arg_mount
+mkdir $_arg_mount/boot
+mount "${_arg_disk}"1 $_arg_mount/boot
+
+rsync -a --info=progress2,stats $_arg_rpi_folder/ $_arg_mount
+sync
+
+umount $_arg_mount{/boot,}
+
+# ] <-- needed because of Argbash
