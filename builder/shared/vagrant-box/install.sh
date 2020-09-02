@@ -211,7 +211,7 @@ sudo $_arg_share/vagrant-box/chroot-rpi.sh locale-gen
 # sudo $_arg_share/vagrant-box/chroot-rpi.sh ldconfig -v
 sudo $_arg_share/vagrant-box/chroot-rpi.sh 'ROOT=/ env-update'
 
-sudo cp $_arg_share/rpi/emerge-chroot $_arg_rpi_folder/etc/bash/bashrc.d/emerge-chroot
+sudo cp $_arg_share/rpi/emerge-chroot $_arg_rpi_folder/usr/local/sbin
 
 sudo mv $_arg_rpi_folder/etc/portage/package.keywords \
     $_arg_rpi_folder/etc/portage/package.accept_keywords
@@ -320,6 +320,7 @@ printf '## https://wiki.gentoo.org/wiki/Raspberry_Pi_3_64_bit_Install#.2Fboot.2F
 printf '## ################## #\n'
 sudo cp $_arg_share/rpi/cmdline.txt $_arg_rpi_folder/boot
 
+# parted to setup SD card
 emerge parted
 
 # ] <-- needed because of Argbash

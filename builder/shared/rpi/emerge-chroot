@@ -1,1 +1,3 @@
-alias emerge-chroot="ROOT=/ CBUILD=$(portageq envvar CHOST) HOSTCC=$CBUILD-gcc emerge"
+#!/bin/bash
+
+ROOT=/ CBUILD=$(portageq envvar CHOST) HOSTCC=$CBUILD-gcc emerge "${@}"
