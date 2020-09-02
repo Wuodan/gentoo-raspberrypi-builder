@@ -30,13 +30,13 @@ mkswap "${_arg_disk}"2
 mkfs -F -i 8192 -t ext4 "${_arg_disk}"3
 sync
 
-mount "${_arg_disk}"3 $_arg_mount
-mkdir $_arg_mount/boot
-mount "${_arg_disk}"1 $_arg_mount/boot
+mount "${_arg_disk}"3 $_arg_mountpoint
+mkdir $_arg_mountpoint/boot
+mount "${_arg_disk}"1 $_arg_mountpoint/boot
 
-rsync -a --info=progress2,stats $_arg_rpi_folder/ $_arg_mount
+rsync -a --info=progress2,stats $_arg_rpi_folder/ $_arg_mountpoint
 sync
 
-umount $_arg_mount{/boot,}
+umount $_arg_mountpoint{/boot,}
 
 # ] <-- needed because of Argbash
