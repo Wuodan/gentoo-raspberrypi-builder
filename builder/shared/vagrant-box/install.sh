@@ -335,7 +335,11 @@ printf '## ################## #\n'
 printf '## emerge wpa_supplicant\n'
 printf '## ################## #\n'
 sudo $_arg_share/vagrant-box/chroot-rpi.sh \
-   'emerge-chroot net-wireless/wpa_supplicant net-misc/openssh'
+   'emerge-chroot  net-misc/dhcpcd net-wireless/wpa_supplicant net-misc/openssh'
+sudo $_arg_share/vagrant-box/chroot-rpi.sh \
+    'rc-update add dhcpcd default'
+sudo $_arg_share/vagrant-box/chroot-rpi.sh \
+    'rc-update add wpa_supplicant default'
 
 # add a wifi network to wpa_supplicant
 
