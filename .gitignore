@@ -1,1 +1,3 @@
 .vagrant
+/builder/shared/src/*
+!/builder/shared/src/.keep

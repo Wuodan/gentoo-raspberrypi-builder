@@ -5,7 +5,7 @@ echo "This is just a script template, not the script (yet) - pass it to 'argbash
 exit 11  #)Created by argbash-init v2.9.0
 # ARG_OPTIONAL_SINGLE([rpi-folder], [f], [root folder for chroot], [/home/vagrant/rpi-install])
 # ARG_OPTIONAL_SINGLE([share], [s], [folder with files from vbox host], [/home/vagrant/shared])
-# ARG_OPTIONAL_SINGLE([rpi-resource], [r], [folder with files for rpi installation], [~/rpi-files])
+# ARG_OPTIONAL_SINGLE([rpi-resource], [r], [folder with files for rpi installation], [/home/vagrant/rpi-files])
 # ARG_DEFAULTS_POS
 # ARG_HELP([<The general help message of my script>])
 # ARGBASH_GO
@@ -47,13 +47,19 @@ printf '# ################## #\n'
 sudo emerge dev-vcs/git
 mkdir $_arg_rpi_resource
 cd $_arg_rpi_resource
-git clone -b stable --depth=1 https://github.com/raspberrypi/firmware
+# use cache if possible
+if [ -d $_arg_share/src/firmware ]; then
+    printf '# Using cache\n'
+    git clone --quiet -b stable --depth=1 file://$_arg_share/src/firmware
+else
+    git clone --quiet -b stable --depth=1 https://github.com/raspberrypi/firmware
+fi
 
 # printf '# ################## #\n'
 # printf '# Fetch, configure and build the Raspberry Pi kernel\n'
 # printf '# https://wiki.gentoo.org/wiki/Raspberry_Pi_3_64_bit_Install#Fetch.2C_configure_and_build_the_Raspberry_Pi_kernel\n'
 # printf '# ################## #\n'
-# git clone https://github.com/raspberrypi/linux
+# git clone --quiet https://github.com/raspberrypi/linux
 # cd $_arg_rpi_resource/linux
 # ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make bcm2711_defconfig
 # ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make menuconfig
@@ -73,11 +79,18 @@ printf '## Install the arm64 stage 3\n'
 printf '## https://wiki.gentoo.org/wiki/Raspberry_Pi_3_64_bit_Install#Install_the_arm64_stage_3\n'
 printf '## ################## #\n'
 cd $_arg_rpi_folder
-sudo wget http://distfiles.gentoo.org/experimental/arm64/stage3-arm64-20200609.tar.bz2.DIGESTS
-sudo wget http://distfiles.gentoo.org/experimental/arm64/stage3-arm64-20200609.tar.bz2
+# use cache if possible
+if [ -f $_arg_share/src/stage3-arm64-20200609.tar.bz2 ] && [ -f $_arg_share/src/stage3-arm64-20200609.tar.bz2.DIGESTS ]; then
+    printf '# Using cache\n'
+    cp $_arg_share/src/stage3-arm64-20200609.tar.bz2.DIGESTS .
+    cp $_arg_share/src/stage3-arm64-20200609.tar.bz2 .
+else
+    wget --quiet http://distfiles.gentoo.org/experimental/arm64/stage3-arm64-20200609.tar.bz2.DIGESTS
+    wget --quiet http://distfiles.gentoo.org/experimental/arm64/stage3-arm64-20200609.tar.bz2
+fi
 b2sum stage3-arm64-20200609.tar.bz2 | grep -q -f - stage3-arm64-20200609.tar.bz2.DIGESTS || (printf 'verify failed\n' && exit 1)
-sudo tar xpvf stage3-*.tar.bz2 --xattrs-include='*.*' --numeric-owner
-sudo rm stage3-arm64-20200609.tar.bz2*
+sudo tar xpf stage3-*.tar.bz2 --xattrs-include='*.*' --numeric-owner
+rm stage3-arm64-20200609.tar.bz2*
 sudo rm -rf $_arg_rpi_folder/tmp/*
 
 printf '## ################## #\n'
@@ -85,18 +98,25 @@ printf '## Install a Gentoo repository snapshot\n'
 printf '## https://wiki.gentoo.org/wiki/Raspberry_Pi_3_64_bit_Install#Install_a_Gentoo_repository_snapshot\n'
 printf '## ################## #\n'
 cd $_arg_rpi_folder
-sudo wget http://distfiles.gentoo.org/snapshots/portage-latest.tar.bz2.md5sum
-sudo wget http://distfiles.gentoo.org/snapshots/portage-latest.tar.bz2
+# use cache if possible
+if [ -f $_arg_share/src/portage-latest.tar.bz2 ] && [ -f $_arg_share/src/portage-latest.tar.bz2.md5sum ]; then
+    printf '# Using cache\n'
+    cp $_arg_share/src/portage-latest.tar.bz2.md5sum .
+    cp $_arg_share/src/portage-latest.tar.bz2 .
+else
+    wget --quiet http://distfiles.gentoo.org/snapshots/portage-latest.tar.bz2.md5sum
+    wget --quiet http://distfiles.gentoo.org/snapshots/portage-latest.tar.bz2
+fi
 cd $_arg_rpi_folder
 md5sum portage-latest.tar.bz2 | grep -q -f - portage-latest.tar.bz2.md5sum || (printf 'verify failed\n' && exit 1)
 sudo mkdir --parents $_arg_rpi_folder/var/db/repos/gentoo
-sudo tar xvpf portage-latest.tar.bz2 --strip-components=1 -C $_arg_rpi_folder/var/db/repos/gentoo
-sudo rm portage-latest.tar.bz2*
+sudo tar xpf portage-latest.tar.bz2 --strip-components=1 -C $_arg_rpi_folder/var/db/repos/gentoo
+rm portage-latest.tar.bz2*
 sudo mkdir --parents $_arg_rpi_folder/etc/portage/repos.conf
 sudo cp $_arg_rpi_folder/usr/share/portage/config/repos.conf $_arg_rpi_folder/etc/portage/repos.conf/gentoo.conf
 sudo cp --dereference /etc/resolv.conf $_arg_rpi_folder/etc/
 
-sudo cp /home/vagrant/shared/rpi/make.conf $_arg_rpi_folder/etc/portage
+sudo cp $_arg_share/rpi/make.conf $_arg_rpi_folder/etc/portage
 
 # ########################## QEMU CHROOT START ####################
 # Setup chroot
@@ -172,7 +192,13 @@ printf '## Install WiFi firmware\n'
 printf '## https://wiki.gentoo.org/wiki/Raspberry_Pi_3_64_bit_Install#Install_WiFi_firmware\n'
 printf '## ################## #\n'
 cd $_arg_rpi_resource/
-git clone https://github.com/RPi-Distro/firmware-nonfree
+# use cache if possible
+if [ -d $_arg_share/src/firmware-nonfree ]; then
+    printf '# Using cache\n'
+    git clone --quiet file://$_arg_share/src/firmware-nonfree
+else
+    git clone --quiet https://github.com/RPi-Distro/firmware-nonfree
+fi
 sudo mkdir -p $_arg_rpi_folder/lib/firmware/brcm
 sudo cp $_arg_rpi_resource/firmware-nonfree/brcm/brcmfmac43455-sdio.* $_arg_rpi_folder/lib/firmware/brcm/
 
@@ -180,7 +206,7 @@ printf '## ################## #\n'
 printf '## Install Bluetooth firmware\n'
 printf '## https://wiki.gentoo.org/wiki/Raspberry_Pi_3_64_bit_Install#Install_Bluetooth_firmware\n'
 printf '## ################## #\n'
-sudo wget -P $_arg_rpi_folder/lib/firmware/brcm https://raw.githubusercontent.com/RPi-Distro/bluez-firmware/master/broadcom/BCM4345C0.hcd
+sudo wget --quiet --directory-prefix=$_arg_rpi_folder/lib/firmware/brcm https://raw.githubusercontent.com/RPi-Distro/bluez-firmware/master/broadcom/BCM4345C0.hcd
 
 
 printf '# ################## #\n'
@@ -193,7 +219,13 @@ printf '## rasberrypi/tools\n'
 printf '## https://wiki.gentoo.org/wiki/Raspberry_Pi4_64_Bit_Install#rasberrypi.2Ftools\n'
 printf '## ################## #\n'
 cd $_arg_rpi_resource
-git clone https://github.com/raspberrypi/tools
+# use cache if possible
+if [ -d $_arg_share/src/tools ]; then
+    printf '# Using cache\n'
+    git clone --quiet file://$_arg_share/src/tools
+else
+    git clone --quiet https://github.com/raspberrypi/tools
+fi
 cd tools/armstubs
 make CC8=aarch64-unknown-linux-gnu-gcc LD8=aarch64-unknown-linux-gnu-ld OBJCOPY8=aarch64-unknown-linux-gnu-objcopy OBJDUMP8=aarch64-unknown-linux-gnu-objdump armstub8-gic.bin
 sudo cp armstub8-gic.bin $_arg_rpi_folder/boot/
@@ -243,6 +275,7 @@ sudo $_arg_share/vagrant-box/chroot-rpi.sh \
     'rc-update add dhcpcd default'
 sudo $_arg_share/vagrant-box/chroot-rpi.sh \
     'rc-update add wpa_supplicant default'
+sudo cp $_arg_share/rpi/wpa_supplicant.conf $_arg_rpi_folder/etc/wpa_supplicant/wpa_supplicant.conf
 
 # add a wifi network to wpa_supplicant
 
