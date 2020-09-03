@@ -16,7 +16,7 @@ This sets up a vagrant box containing everything one needs to run Gentoo on a Ra
 1. ```cd``` into the project folder
 1. Open the Vagrantfile to edit:
 1. Change ```vendorid``` and ```productid``` to match your SD card
-1. For USB 2: toggle all the ```--usb...``` options
+1. For USB 2: toggle all the ```--usb?hci``` options
 1. From the project folder, run:
 1. ```vagrant up```
 1. ```vagrant ssh```
