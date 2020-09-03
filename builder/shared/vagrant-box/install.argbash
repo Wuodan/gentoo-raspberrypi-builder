@@ -203,7 +203,7 @@ printf '## Root password\n'
 printf '## https://wiki.gentoo.org/wiki/Raspberry_Pi_3_64_bit_Install#Root_Password\n'
 printf '## ################## #\n'
 sudo sed -iE 's#^root:.*$#root:$6$xxPVR/Td5iP$/7Asdgq0ux2sgNkklnndcG4g3493kUYfrrdenBXjxBxEsoLneJpDAwOyX/kkpFB4pU5dlhHEyN0SK4eh/WpmO0::0:99999:7:::#' \
-    $_arg_rpi_folder/etc/passwd
+    $_arg_rpi_folder/etc/shadow
 
 printf '## ################## #\n'
 printf '## /etc/fstab\n'
@@ -238,7 +238,7 @@ printf '## ################## #\n'
 printf '## emerge wpa_supplicant\n'
 printf '## ################## #\n'
 sudo $_arg_share/vagrant-box/chroot-rpi.sh \
-   'emerge-chroot -avt net-wireless/wpa_supplicant openssh'
+   'emerge-chroot net-wireless/wpa_supplicant net-misc/openssh'
 
 # add a wifi network to wpa_supplicant
 
