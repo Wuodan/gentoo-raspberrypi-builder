@@ -11,7 +11,7 @@ Vagrant.configure("2") do |config|
   config.vm.provider "virtualbox" do |vb|
     # cpu, memory
     vb.memory = 8192
-    vb.cpus = 8
+    vb.cpus = 6
     # usb Smartcard Reader
     vb.customize ["modifyvm", :id, "--usb", "on"]
     vb.customize ["modifyvm", :id, "--usbohci", "off"]
