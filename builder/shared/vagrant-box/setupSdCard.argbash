@@ -30,6 +30,7 @@ mkswap "${_arg_disk}"2
 mkfs -F -i 8192 -t ext4 "${_arg_disk}"3
 sync
 
+mkdir $_arg_mountpoint
 mount "${_arg_disk}"3 $_arg_mountpoint
 mkdir $_arg_mountpoint/boot
 mount "${_arg_disk}"1 $_arg_mountpoint/boot
